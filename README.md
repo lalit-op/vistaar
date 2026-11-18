@@ -196,10 +196,10 @@ This repository also contains an **independent web-app module** for TizenBrew. T
 
 ### Add to TizenBrew
 
-In TizenBrew, open **Module Manager → Add GitHub Module** and enter:
+In TizenBrew, open **Module Manager → Add GitHub Module** and enter the source-prefixed GitHub module ID:
 
 ```text
-lalit-op/vistaar@main
+gh/lalit-op/vistaar@main
 ```
 
 If the module is cached, remove it, restart TizenBrew, and add it again. A pinned release tag or commit is preferable for repeatable installs; this repository currently uses the `main` branch.
