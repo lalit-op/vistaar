@@ -186,3 +186,32 @@ docs/screenshots/           README images
 ## License
 
 No license has been chosen yet. Until one is added, all rights are reserved by the author; add a `LICENSE` file before inviting contributions.
+
+
+---
+
+## Samsung Tizen / TizenBrew module
+
+This repository also contains an **independent web-app module** for TizenBrew. The original Android application remains in the Android Gradle project; the TizenBrew entry point is `app/index.html`, selected by the root `package.json`.
+
+### Add to TizenBrew
+
+In TizenBrew, open **Module Manager → Add GitHub Module** and enter:
+
+```text
+lalit-op/vistaar@main
+```
+
+If the module is cached, remove it, restart TizenBrew, and add it again. A pinned release tag or commit is preferable for repeatable installs; this repository currently uses the `main` branch.
+
+### TizenBrew web module scope
+
+The module is a browser-based TV interface with M3U/M3U8 playlist loading, an optional XMLTV guide, favourites, recent channels, search, basic HD categorisation, and HTML5 video playback. It uses standard web APIs rather than Android classes.
+
+**Important differences from the Android app:** this TizenBrew module does not implement the Android Jio OTP/session/channel-entitlement APIs, Jio stream resolution, ExoPlayer, Widevine DRM integration, or the Android HLS playlist workaround. Do not enter Jio credentials into this web module. It is not yet a feature-complete Android port.
+
+TizenBrew app modules are served as web pages; they are not native Tizen packages. Module pages do not expose Samsung's `tizen` or `webapis` APIs, so playback is limited to what the TV's browser-based HTML5 media stack can play. Actual playback, remote behavior, and launch must be verified on the target TV.
+
+### Development checks
+
+Run `npm test` with Node.js 18 or newer to check the module manifest, JavaScript syntax, M3U parsing, and required TV navigation hooks. These checks do not emulate TizenBrew or certify a TV model.
