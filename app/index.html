@@ -175,6 +175,19 @@ document.addEventListener('keydown',e=>{
    e.preventDefault();
    return;
  }
+ // Some TV remotes send Enter without generating a button click.
+ const focused=document.activeElement;
+ if(key==='Enter'&&focused.tagName==='BUTTON'&&layer.contains(focused)){
+   e.preventDefault();
+   if(e.repeat)return;
+   if(layer===$('player')){
+     const barWasHidden=$('playerbar').classList.contains('hidden');
+     showPlayerBar();
+     if(barWasHidden){$('playPause').focus();return}
+   }
+   focused.click();
+   return;
+ }
  if(layer===$('player')){
    const hidden=$('playerbar').classList.contains('hidden');
    showPlayerBar();
