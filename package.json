@@ -11,5 +11,8 @@
     "ArrowLeft",
     "ArrowRight",
     "Enter"
-  ]
+  ],
+  "scripts": {
+    "test": "node scripts/tizenbrew-smoke-test.mjs"
+  }
 }
