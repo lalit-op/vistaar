@@ -1,18 +1,16 @@
 {
   "name": "vistaar-tizenbrew",
   "appName": "Vistaar",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Vistaar TV web app module for Samsung Tizen via TizenBrew",
   "packageType": "app",
   "appPath": "app/index.html",
-  "keys": [
-    "ArrowUp",
-    "ArrowDown",
-    "ArrowLeft",
-    "ArrowRight",
-    "Enter"
-  ],
+  "keys": [],
   "scripts": {
     "test": "node scripts/tizenbrew-smoke-test.mjs"
-  }
+  },
+  "files": [
+    "app",
+    "README.md"
+  ]
 }
