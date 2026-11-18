@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets"
+        id="https://github.com/lalit-op/vistaar" version="0.2.0" viewmodes="maximized">
+  <name>Vistaar</name>
+  <content src="index.html"/>
+  <icon src="icon.png"/>
+  <tizen:application id="VistaarTV1.Vistaar" package="VistaarTV1" required_version="5.5"/>
+  <tizen:profile name="tv-samsung"/>
+  <tizen:privilege name="http://tizen.org/privilege/internet"/>
+  <tizen:privilege name="http://tizen.org/privilege/tv.inputdevice"/>
+  <access origin="*" subdomains="true"/>
+  <tizen:setting screen-orientation="landscape" hwkey-event="enable"/>
+</widget>

@@ -26,3 +26,23 @@ assert.equal(channels[0].group, 'News');
 assert.equal(channels[0].hd, true);
 assert.ok(source.includes('function moveFocus(direction)'));
 console.log('Vistaar TizenBrew smoke checks passed.');
+
+// Some Samsung remotes emit keydown/keyup without the browser's synthetic click.
+const handlerStart = source.indexOf("document.addEventListener('keydown'");
+const handlerEnd = source.indexOf("document.addEventListener('visibilitychange'", handlerStart);
+let keydown;
+let clicks = 0;
+const button = { tagName: 'BUTTON', click() { clicks++; } };
+const home = {contains: el => el === button};
+const player = {};
+runInNewContext(source.slice(handlerStart, handlerEnd), {
+  document: {activeElement: button, addEventListener(type, handler) { keydown = handler; }},
+  activeLayer: () => home,
+  $: id => id === 'player' ? player : null,
+});
+for (const repeat of [false, true]) {
+  let prevented = false;
+  keydown({key: 'Enter', keyCode: 13, repeat, preventDefault() { prevented = true; }});
+  assert.ok(prevented, 'suppress duplicate browser activation');
+}
+assert.equal(clicks, 1, 'one OK press activates the focused button once');

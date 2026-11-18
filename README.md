@@ -45,6 +45,8 @@ Vistaar is an **unofficial, independent client**. You sign in with your **own** 
 
 ## Download and install
 
+For Samsung TVs, see the [standalone widget setup](#samsung-tv-standalone-widget) or [TizenBrew module](#samsung-tizen--tizenbrew-module).
+
 The ready-to-install APK is in this repository:
 
 **[`releases/Vistaar-0.2-debug.apk`](releases/Vistaar-0.2-debug.apk)**
@@ -190,16 +192,41 @@ No license has been chosen yet. Until one is added, all rights are reserved by t
 
 ---
 
+## Samsung TV standalone widget
+
+The standalone widget targets Samsung TVs running **Tizen 5.5 or later**. It uses Samsung AVPlay for direct channel streams and shares the TizenBrew interface for M3U playlists, the free India catalogue, XMLTV guides, search, favourites and recent channels. Android Jio OTP, subscriber channels and Jio DRM playback are outside this build.
+
+[Download Vistaar-unsigned.wgt](releases/Vistaar-unsigned.wgt). The widget needs a Samsung certificate profile for your TV before installation. The TizenBrew module below is an alternative if you already have TizenBrew installed.
+
+### Sign and install with Samsung Smart Development Bridge
+
+1. Install the Samsung TV SDK and Samsung Certificate Extension. Connect the computer and TV to the same network. In the TV's Apps screen, enable Developer Mode, enter the computer's IP address and restart the TV.
+2. Connect from the computer with `sdb connect TV_IP:26101`. Use `sdb devices` to find the connected serial. In Certificate Manager, create a **Samsung TV** profile with the TV's DUID on its distributor certificate. In Device Manager, choose **Permit to install applications** if available.
+3. From the repository root, run `python3 scripts/package-tizen.py` (Windows: `py -3 scripts/package-tizen.py`). This stages the app in `build/tizen/widget`. If you downloaded the WGT alone, extract it as a ZIP into that same empty folder, with `config.xml` at its root.
+4. From the repository root or the directory containing `build`, sign, install and launch with the commands below. Substitute your certificate profile, the serial from step 2 and the signed WGT filename printed by the packager. If the packager reports a different output directory, use that directory in the install command.
+
+```sh
+tizen package -t wgt -s "PROFILE_NAME" -- build/tizen/widget
+tizen install -s TV_SERIAL -n SIGNED_FILENAME.wgt -- build/tizen/widget
+tizen run -s TV_SERIAL -p VistaarTV1.Vistaar
+```
+
+5. Open **Load free India channels**, or go to **Settings** to enter your own playlist and optional guide URL. Use the arrows and OK to choose a channel. Back closes the guide or player before returning to Home. Live availability, codecs and transport support vary by feed and TV.
+
+The package and player lifecycle have local tests. Signing, AVPlay decoding, and remote behavior on physical hardware still need an on-device check.
+
+[Samsung connection guide](https://developer.samsung.com/smarttv/develop/getting-started/using-sdk/tv-device.html) · [Certificates](https://developer.samsung.com/smarttv/develop/getting-started/setting-up-sdk/creating-certificates.html) · [TV command line](https://developer.samsung.com/smarttv/develop/getting-started/using-sdk/command-line-interface.html)
+
 ## Samsung Tizen / TizenBrew module
 
 This repository also contains an **independent web-app module** for TizenBrew. The original Android application remains in the Android Gradle project; the TizenBrew entry point is `app/index.html`, selected by the root `package.json`.
 
 ### Add to TizenBrew
 
-In TizenBrew, open **Module Manager → Add GitHub Module** and enter the source-prefixed GitHub module ID:
+In TizenBrew, open **Module Manager → Add GitHub Module** and enter the repository and branch. Module Manager adds the source prefix itself.
 
 ```text
-gh/lalit-op/vistaar@main
+lalit-op/vistaar@main
 ```
 
 If the module is cached, remove it, restart TizenBrew, and add it again. A pinned release tag or commit is preferable for repeatable installs; this repository currently uses the `main` branch.
