@@ -24,6 +24,15 @@ assert.equal(channels[0].name, 'Test News HD');
 assert.equal(channels[0].tvgId, 'test.news');
 assert.equal(channels[0].group, 'News');
 assert.equal(channels[0].hd, true);
+const [quoted] = parseM3U('#EXTINF:-1 http-user-agent="Browser (one, two)" tvg-language="Hindi" group-title="News",News (1080p)\nhttps://example.com/tv');
+assert.equal(quoted.name, 'News (1080p)');
+assert.equal(quoted.language, 'Hindi');
+assert.equal(quoted.hd, true);
+const dateStart = source.indexOf('function xmlTime(');
+const dateEnd = source.indexOf('function timeLabel(', dateStart);
+const xmlTime = runInNewContext('(' + source.slice(dateStart, dateEnd) + ')');
+assert.equal(xmlTime('20261119193000 +0530'), Date.UTC(2026, 10, 19, 14));
+assert.ok(Number.isNaN(xmlTime('unknown')));
 assert.ok(source.includes('function moveFocus(direction)'));
 console.log('Vistaar TizenBrew smoke checks passed.');
 

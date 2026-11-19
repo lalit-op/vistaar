@@ -226,10 +226,14 @@ This repository also contains an **independent web-app module** for TizenBrew. T
 In TizenBrew, open **Module Manager → Add GitHub Module** and enter the repository and branch. Module Manager adds the source prefix itself.
 
 ```text
-lalit-op/vistaar@main
+lalit-op/vistaar@samsung-tizen
 ```
 
-If the module is cached, remove it, restart TizenBrew, and add it again. A pinned release tag or commit is preferable for repeatable installs; this repository currently uses the `main` branch.
+If the module is cached, remove it, restart TizenBrew, and add it again. Use a commit ID to pin a specific build.
+
+![Home, Live TV, Guide and playlist setup in the Tizen 5.5 simulator](docs/screenshots/tizen-preview.webp)
+
+The preview uses sample programme data. Add an XMLTV feed with matching channel IDs to see programme titles, progress and schedules. Live TV groups channels by playlist language when available, with the playlist category as a fallback.
 
 ### TizenBrew web module scope
 
