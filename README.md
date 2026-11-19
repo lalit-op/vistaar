@@ -237,7 +237,7 @@ The preview uses sample programme data. Add an XMLTV feed with matching channel 
 
 ### TizenBrew web module scope
 
-The module is a browser-based TV interface with M3U/M3U8 playlist loading, an optional XMLTV guide, favourites, recent channels, search, basic HD categorisation, and HTML5 video playback. It uses standard web APIs rather than Android classes.
+The module is a browser-based TV interface with M3U/M3U8 playlist loading, an optional XMLTV guide, favourites, recent channels, search, basic HD categorisation, and HTML5 video playback. For HLS channels it loads bundled hls.js 1.6.13 on browsers with compatible Media Source Extensions and retries in the built-in video player if needed. Channel availability and codec support vary. It uses standard web APIs rather than Android classes.
 
 **Important differences from the Android app:** this TizenBrew module does not implement the Android Jio OTP/session/channel-entitlement APIs, Jio stream resolution, ExoPlayer, Widevine DRM integration, or the Android HLS playlist workaround. Do not enter Jio credentials into this web module. It is not yet a feature-complete Android port.
 

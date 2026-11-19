@@ -325,6 +325,92 @@ function refreshView(){
 function openGuide(ch){guideOpener=document.activeElement;$('guideTitle').textContent=ch?'Guide · '+ch.name:'Programme guide';const root=$('guideList');root.textContent='';let matches=[];if(ch)matches=S.epg[ch.tvgId]||[];else S.channels.forEach(c=>(S.epg[c.tvgId]||[]).forEach(p=>matches.push({...p,channel:c.name})));if(!matches.length){const p=document.createElement('p');p.textContent='No matching programme data. Add an XMLTV URL and ensure its channel IDs match your playlist tvg-id values.';root.append(p)}else matches.slice(0,100).forEach(p=>{const d=document.createElement('div');d.className='guide-row';const b=document.createElement('b');b.textContent=(p.channel?p.channel+' · ':'')+p.title;const s=document.createElement('span');s.textContent=[p.start,p.stop].filter(Boolean).join(' – ');d.append(b,s);if(p.desc){const q=document.createElement('p');q.textContent=p.desc;d.append(q)}root.append(d)});$('guide').style.display='flex';$('closeGuide').focus()}
 function showPlayerBar(){ $('playerbar').classList.remove('hidden');clearTimeout(S.playerTimer);S.playerTimer=setTimeout(()=>{$('playerbar').classList.add('hidden')},5000)}
 function playerError(msg){$('playerError').textContent=msg;$('playerError').style.display='block'}
+let hlsLibrary;
+let hlsSession;
+let startTimer;
+function loadHls(){
+ if(!hlsLibrary){
+   hlsLibrary=new Promise((resolve,reject)=>{
+     const script=document.createElement('script');
+     script.src='vendor/hls.light-1.6.13.min.js';
+     script.onload=()=>window.Hls?resolve(window.Hls):reject(Error('HLS player unavailable'));
+     script.onerror=()=>reject(Error('HLS player unavailable'));
+     document.head.appendChild(script);
+   }).catch(error=>{hlsLibrary=null;throw error});
+ }
+ return hlsLibrary;
+}
+function stopWebPlayback(){
+ clearTimeout(startTimer);
+ const video=$('video');
+ video.onerror=null;
+ video.onplaying=null;
+ if(hlsSession){hlsSession.destroy();hlsSession=null}
+ video.pause();
+ video.removeAttribute('src');
+ video.load();
+}
+function openWebPlayback(url,request){
+ stopWebPlayback();
+ const video=$('video');
+ const isHls=/\.m3u8(?:$|[?#&])/i.test(url);
+ let attempt=0;
+ function current(id){return request===playbackRequest && attempt===id}
+ function playVideo(id,fail){
+   const promise=video.play();
+   if(promise)promise.catch(error=>{
+     if(!current(id)||error.name==='AbortError')return;
+     if(error.name==='NotAllowedError'){
+       clearTimeout(startTimer);
+       playerError('Press Play to start the channel.');
+     }else fail();
+   });
+ }
+ function started(id){
+   if(!current(id))return;
+   clearTimeout(startTimer);
+   $('playerError').style.display='none';
+ }
+ function direct(reason){
+   const id=++attempt;
+   stopWebPlayback();
+   function fail(){
+     if(!current(id))return;
+     clearTimeout(startTimer);
+     playerError(reason||'This channel could not be played. Try another channel or press Play to retry.');
+   }
+   video.onplaying=()=>started(id);
+   video.onerror=()=>{if(video.error)fail()};
+   startTimer=setTimeout(fail,20000);
+   video.src=url;
+   playVideo(id,fail);
+ }
+ if(!isHls||!window.MediaSource){direct();return}
+ const id=++attempt;
+ function fallback(reason){if(current(id))direct(reason)}
+ startTimer=setTimeout(()=>fallback('The channel took too long to start. Press Play to retry.'),20000);
+ loadHls().then(Hls=>{
+   if(!current(id))return;
+   if(!Hls.isSupported()){
+     fallback('The TV could not play this HLS stream. Try another channel or the standalone Samsung widget.');
+     return;
+   }
+   const hls=new Hls({enableWorker:false,capLevelToPlayerSize:true});
+   hlsSession=hls;
+   video.onplaying=()=>started(id);
+   hls.on(Hls.Events.ERROR,(_,data)=>{
+     if(!data.fatal||!current(id))return;
+     const status=data.response && data.response.code;
+     const message=status>=400?'The channel server returned HTTP '+status+'. Try another channel or retry later.':
+       data.type===Hls.ErrorTypes.NETWORK_ERROR?'The TV could not load the stream from this channel server. Try another channel.':
+       'The TV could not decode this channel. Try another channel or the standalone Samsung widget.';
+     fallback(message);
+   });
+   hls.on(Hls.Events.MANIFEST_PARSED,()=>{if(current(id))playVideo(id,()=>fallback())});
+   hls.loadSource(url);
+   hls.attachMedia(video);
+ }).catch(()=>fallback());
+}
 function play(c){
  const request=++playbackRequest;
  S.current=c;
@@ -337,13 +423,7 @@ function play(c){
  if(nativePlayer){
    nativePlayer.open(c.url,S.aspect,playerError);
  }else{
-   const video=$('video');
-   video.src=c.url;
-   video.load();
-   const pending=video.play();
-   if(pending)pending.catch(()=>{
-     if(request===playbackRequest)playerError('Playback did not start. Press Play to retry or choose another channel.');
-   });
+   openWebPlayback(c.url,request);
  }
  render();
  showPlayerBar();
@@ -353,12 +433,7 @@ function closePlayer(){
  const last=S.current;
  ++playbackRequest;
  if(nativePlayer)nativePlayer.close();
- else{
-   const video=$('video');
-   video.pause();
-   video.removeAttribute('src');
-   video.load();
- }
+ else stopWebPlayback();
  $('player').style.display='none';
  S.current=null;
  clearTimeout(S.playerTimer);
@@ -460,8 +535,6 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('visibilitychange',()=>{
  if(document.hidden&&S.current){if(activeLayer()===$('guide'))$('closeGuide').click();closePlayer()}
 });
-$('video').addEventListener('error',()=>playerError('This stream format or codec may not be supported by the TV browser, or the stream may be unavailable.'));
-$('video').addEventListener('playing',()=>$('playerError').style.display='none');
 render();focusFirst();
 const saved=read('vistar:playlist','');const savedEpg=read('vistar:epg','');if(saved){$('status').textContent='Restoring saved playlist…';loadPlaylist(saved,saved===INDIA).then(()=>{if(savedEpg)loadEpg(savedEpg)});}else{$('status').textContent='Ready'}
 if(!('fetch'in window))toast('This TV browser may be too old for playlist loading');
